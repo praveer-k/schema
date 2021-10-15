@@ -14,5 +14,9 @@ Intended API:
 ```
 schema --generate --infile="<filepath>.jsonl" --outfile="<filepath>.schema.json"
 schema --fix-conflicts --infile="<filepath>.schema.json" --outfile="<filepath>.corrected.jsonl"
+
+or directly,
+
+schema --generate --fix-conflicts --infile="<filepath>.jsonl" --outfile="<filepath>.corrected.jsonl"
 ```
 
