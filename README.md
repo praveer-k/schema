@@ -1,4 +1,5 @@
-# schema
+# Schema [Generate and Fix Conflicts]
+---
 Output from an API often tends to have variable outputs. Sometimes, a field that has to be an array is a number. A field that has to be a string turns out to be a number. 
 
 By this project I intend to accomplish the idea that if lines of json objects are having variable schema we convert such a set of JSON objects to comply to generic schema. We then use that schema to fix any conflicts that may pose due to that generic schema.
