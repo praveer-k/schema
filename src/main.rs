@@ -9,6 +9,17 @@ use std::io::Write;
 
 use parsers::jsonl::read_jsonl;
 
+fn init_logger(){
+    Builder::new().target(Target::Stdout).format(|buf, record| {
+        writeln!(buf, 
+            "{} [{}] {}",
+            Local::now().format("%Y-%m-%dT%H:%M:%S"),
+            record.level(),
+            record.args()
+        )
+    }).filter(None, LevelFilter::Info).init();
+}
+
 #[derive(Parser, Debug)]
 struct Args {
     #[arg(short, long, default_value = "./src/mock/test.jsonl", help="Specify path to the data file")]
@@ -18,14 +29,8 @@ struct Args {
 }
 
 fn main() {
-    Builder::new().target(Target::Stdout).format(|buf, record| {
-        writeln!(buf, 
-            "{} [{}] {}",
-            Local::now().format("%Y-%m-%dT%H:%M:%S"),
-            record.level(),
-            record.args()
-        )
-    }).filter(None, LevelFilter::Info).init();
+    init_logger();
+
     let args = Args::parse();
     
     println!("Using the following file: {}", &args.path);
@@ -37,9 +42,6 @@ fn main() {
         },
         "json" => {
             println!("Oh! it's a JSON !!!");
-        },
-        "xml" => {
-            println!("Oh! it's a XML !!!");
         },
         _ => {
             println!("The format does not match any of the possible text formats");
