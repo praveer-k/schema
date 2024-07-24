@@ -1,36 +1,20 @@
-use std::env;
-use std::fs::File;
-use std::path::Path;
-use std::io::{self, BufRead, Write};
+mod parsers;
 
-use chrono::Local;
-use log::LevelFilter;
+use clap::Parser;
+
 use env_logger::{Builder, Target};
-use serde_json::{Result, Value};
-use indicatif::{ProgressBar, ProgressStyle};
+use log::LevelFilter;
+use chrono::Local;
+use std::io::Write;
 
-fn read_lines<P>(filename: P) -> io::Result<(io::Lines<io::BufReader<File>>, usize)> where P: AsRef<Path>, {
-    let file = File::open(filename)?;
-    let mut stream = io::BufReader::new(file);
-    let size = stream.fill_buf()?.len();
-    Ok((stream.lines(), size))
-}
+use parsers::jsonl::read_jsonl;
 
-fn read_jsonl(filename: &str) -> Result<()> {
-    if let Ok((lines, size)) = read_lines(filename) {
-        let bar = ProgressBar::new(size as u64);
-        bar.set_style(ProgressStyle::default_bar().template("{spinner:.green} [{elapsed_precise}] [{bar:40.green}] ({pos}/{len}, ETA {eta})"));
-        for line in lines {
-            bar.inc(1);
-            if let Ok(data) = line {
-                log::info!("{}", format!("{}", data));
-                let v: Value = serde_json::from_str(&data)?;
-                bar.set_message(format!("{}",v["name"]));
-            }
-        }
-        bar.finish_with_message("read all lines");
-    }
-    Ok(())
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(short, long, default_value = "./src/mock/test.jsonl", help="Specify path to the data file")]
+    path: String,
+    #[arg(short, long, default_value = "jsonl", help="Specify file format of the data file")]
+    format: String
 }
 
 fn main() {
@@ -42,7 +26,23 @@ fn main() {
             record.args()
         )
     }).filter(None, LevelFilter::Info).init();
-    let args: Vec<String> = env::args().collect();
-    let filename = &args[1];
-    read_jsonl(filename).expect("Cannot parse json");
+    let args = Args::parse();
+    
+    println!("Using the following file: {}", &args.path);
+
+    match args.format.as_str() {
+        "jsonl" => {
+            read_jsonl(&args.path).expect("Cannot parse the data file");
+            println!("Oh! it's a JSONL !!!");
+        },
+        "json" => {
+            println!("Oh! it's a JSON !!!");
+        },
+        "xml" => {
+            println!("Oh! it's a XML !!!");
+        },
+        _ => {
+            println!("The format does not match any of the possible text formats");
+        },
+    }
 }
